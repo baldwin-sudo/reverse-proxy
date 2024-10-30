@@ -1,79 +1,58 @@
-# Load Balancer Proxy with Caching and Access Control
+# Reverse Proxy with Caching, Load Balancing, and Access Control
 
 ## Overview
 
-This document outlines the steps to manually implement a proxy server that serves as a load balancer, caching layer, and access control point for backend services. The proxy will receive client requests, distribute them to multiple backend servers, cache responses for improved performance, and enforce security measures to restrict access.
+A **reverse proxy** acts as an intermediary server that handles client requests on behalf of backend servers. Unlike a **forward proxy**, which operates on the client side by masking the client’s identity from external servers, a reverse proxy sits on the server side. It represents the backend servers to the client, making it appear as if all requests and responses are directly between the client and the proxy.
 
-## Key Components
+### Key Differences
 
-1. **Proxy Server**
-   - Acts as an intermediary between clients and backend servers.
-   - Receives requests from clients, processes them, and returns responses from backend servers.
+- **Reverse Proxy**:
+  - Intercepts client requests and routes them to the appropriate backend server.
+  - Improves performance, load balancing, and security for backend services.
+  - Seen as part of the backend infrastructure by the client.
 
-2. **Load Balancer**
-   - Distributes incoming requests among multiple backend servers to optimize resource usage and enhance performance.
-   - Utilizes load balancing algorithms to determine which server should handle each request.
+- **Forward Proxy**:
+  - Sits on the client side to interact with external services on the internet.
+  - Commonly used to mask client IP addresses or enforce network policies.
+  - Seen as part of the client’s infrastructure by external services.
 
-3. **Caching Layer**
-   - Stores frequently accessed responses to reduce latency and alleviate load on backend servers.
-   - Implements cache expiration policies to ensure data is up-to-date.
+## Services Offered by a Reverse Proxy
 
-4. **Access Control**
-   - Implements security measures to restrict access to resources.
-   - Uses authentication mechanisms to verify the identity of clients.
+1. **Load Balancing**: 
+   - Distributes client requests across multiple backend servers to avoid overloading a single server. Common algorithms include round-robin, least connections, and IP hashing.
 
-## Steps to Implement the Proxy Server
+2. **Caching**:
+   - Stores responses from backend servers to serve repeated requests faster and reduce server load. Cached responses also improve latency for frequently accessed resources.
 
-### Step 1: Set Up the Environment
+3. **Access Control**:
+   - Filters client requests based on IP addresses, authentication tokens, or other security mechanisms, adding a layer of protection for backend resources.
 
-- **Choose a Framework**: Select a web framework suitable for building the proxy server (e.g., Flask, FastAPI).
-- **Install Required Libraries**: Ensure necessary libraries for HTTP requests and caching mechanisms are available (e.g., `requests`, `flask`).
+## Project Setup and Workflow
 
-### Step 2: Create the Proxy Server
+In this project, the reverse proxy server performs load balancing, caching, and access control over multiple backend servers. Here’s a step-by-step guide to deploying and managing the setup:
 
-- **Initialize the Proxy Server**: Set up the basic server structure and define the endpoints that will handle incoming requests.
-- **Define Backend Servers**: Maintain a list of available backend servers that will process the requests.
+### Step 1: Launch the Backend Servers
 
-### Step 3: Implement Load Balancing
+1. **Run `launch-servers.sh`**: This script builds the Docker image and runs containers for each backend server.
+   - The script initializes multiple instances of backend servers on separate ports, preparing them to receive requests from the reverse proxy.
 
-- **Select Load Balancing Algorithm**: Choose a strategy for distributing requests, such as round-robin, least connections, or IP hash.
-- **Handle Incoming Requests**: Implement logic to select a backend server based on the chosen load balancing algorithm for each incoming request.
+### Step 2: Launch the Proxy Server
 
-### Step 4: Implement Caching
+2. **Run the Proxy Script `proxy.py`**:
+   - Start the proxy by running the main script and add flags for each service (-c to enable caching | -a  configuring access control).
+   - The proxy server will begin receiving and processing client requests, routing them to the appropriate backend server based on load balancing rules.
 
-- **Define Cache Storage**: Decide on a method for caching responses, such as in-memory dictionaries or more advanced solutions like Redis.
-- **Check Cache Before Forwarding Requests**: Implement logic to check if a response is already cached for a given request before forwarding it to a backend server.
-- **Cache Responses**: Store responses from backend servers in the cache to serve subsequent requests faster.
+### Step 3: Test the Proxy Server
 
-### Step 5: Implement Access Control
+3. **Run the `test-proxy.py` Script**:
+   - This script simulates client requests to the proxy server, testing the functionality of load balancing, caching, and access control.
+   - Concurrent requests help verify that the proxy distributes requests evenly and caches responses as intended.
 
-- **Define Authentication Mechanism**: Choose an authentication method, such as API keys or OAuth tokens, to verify client requests.
-- **Check Access Permissions**: Implement logic to validate the client’s credentials and restrict access to unauthorized requests.
+### Step 4: Stop the Servers
 
-### Step 6: Test the Proxy Server
-
-- **Simulate Client Requests**: Test the proxy server with various client requests to ensure it correctly balances load, caches responses, and enforces access control.
-- **Monitor Performance**: Analyze the performance of the proxy server to ensure that it effectively reduces response times and resource usage.
-
-### Step 7: Deploy the Proxy Server
-
-- **Choose a Deployment Platform**: Select an environment to host the proxy server (e.g., cloud provider, local server).
-- **Monitor and Maintain**: Once deployed, continuously monitor the server for performance and security, updating the code as necessary.
-
-## How the Proxy Works
-
-1. **Client Requests**: Clients send HTTP requests to the proxy server instead of directly interacting with backend servers.
-
-2. **Load Balancing**: The proxy server receives the requests and uses a load balancing algorithm to determine which backend server should handle each request. This helps distribute the traffic evenly, preventing any single server from becoming overwhelmed.
-
-3. **Response Handling**: After forwarding the request to the selected backend server, the proxy waits for the server's response. If the response is found in the cache, it serves that cached response to the client instead of forwarding the request.
-
-4. **Caching Responses**: The proxy server caches the responses from backend servers, allowing it to serve future requests for the same resource without having to contact the backend again. This significantly improves performance for frequently accessed resources.
-
-5. **Access Control**: Before processing a request, the proxy checks the client’s credentials against the defined access control policies. If the credentials are valid, the request is processed; otherwise, an error response is returned.
-
-6. **Returning Responses**: Once the proxy server receives a response from the backend server (or retrieves it from the cache), it forwards that response back to the client.
+4. **Run the `stop-servers.sh` Script**:
+   - This script gracefully stops all backend server containers and the proxy server, cleaning up resources and closing connections.
 
 ## Conclusion
 
-By following the outlined steps, you can create a robust proxy server that effectively balances load, improves response times through caching, and enforces security via access control mechanisms. This implementation will provide a more scalable and efficient architecture for handling client requests.
+With this setup, your reverse proxy server effectively manages client requests by distributing load, caching frequently accessed responses, and enforcing access control. This configuration optimizes backend performance and improves scalability and security for client-facing applications.
